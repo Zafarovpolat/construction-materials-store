@@ -203,21 +203,7 @@ export default function Storefront() {
     return MOCK_PRODUCTS.filter(product => product.featured);
   }, []);
 
-  const handleCheckout = useCallback(() => {
-    if (cart.length === 0) {
-      toast.error("Your cart is empty");
-      return;
-    }
 
-    // Check stock availability
-    const outOfStockItems = cart.filter(item => item.quantity > item.product.stock);
-    if (outOfStockItems.length > 0) {
-      toast.error("Some items in your cart are out of stock");
-      return;
-    }
-
-    setIsCheckout(true);
-  }, [cart]);
 
   const handleOrderSubmit = useCallback(async () => {
     setIsLoading(true);
@@ -674,6 +660,7 @@ export default function Storefront() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   addToCart(product);
+
                                 }}
                                 disabled={product.stock === 0}
                               >

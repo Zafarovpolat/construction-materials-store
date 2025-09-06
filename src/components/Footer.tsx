@@ -22,26 +22,26 @@ export const Footer = () => {
               Quick Links
             </h4>
             <nav className="flex flex-col space-y-2">
-              <Link 
-                href="/about" 
+              <Link
+                href="/about"
                 className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
               >
                 About Us
               </Link>
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
               >
                 Contact
               </Link>
-              <Link 
-                href="/privacy" 
+              <Link
+                href="/privacy"
                 className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
               >
                 Privacy Policy
               </Link>
-              <Link 
-                href="/terms" 
+              <Link
+                href="/terms"
                 className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
               >
                 Terms of Service
@@ -57,8 +57,8 @@ export const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <a 
-                  href="mailto:info@buildmart.com" 
+                <a
+                  href="mailto:info@buildmart.com"
                   className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
                 >
                   info@buildmart.com
@@ -66,8 +66,8 @@ export const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <a 
-                  href="tel:+1-555-0123" 
+                <a
+                  href="tel:+1-555-0123"
                   className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm"
                 >
                   +1 (555) 012-3456

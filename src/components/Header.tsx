@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { PackagePlus, PackageMinus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
 interface HeaderProps {
@@ -18,28 +18,15 @@ interface HeaderProps {
 export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
     const router = useRouter();
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const { cart, cartItemCount, cartTotal, updateCartQuantity, clearCart, handleCheckout, formatPrice } = useCart();
+    const { cart, cartItemCount, cartTotal, updateCartQuantity, clearCart, formatPrice } = useCart();
 
     const handleCartCheckout = useCallback(() => {
         // Close the cart sheet and trigger checkout
         setIsCartOpen(false);
 
-        // Check if cart is empty
-        if (cart.length === 0) {
-            handleCheckout(); // This will show the error message
-            return;
-        }
-
-        // Check stock availability
-        const outOfStockItems = cart.filter(item => item.quantity > item.product.stock);
-        if (outOfStockItems.length > 0) {
-            handleCheckout(); // This will show the error message
-            return;
-        }
-
         // Navigate to checkout page
         router.push("/checkout");
-    }, [cart, handleCheckout, router]);
+    }, [router]);
 
     return (
         <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -64,7 +51,7 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
                 <div className="flex items-center gap-4">
                     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="relative">
+                            <Button variant="outline" size="sm" className="relative aspect-square h-auto">
                                 <ShoppingCart className="h-4 w-4" />
                                 {cartItemCount > 0 && (
                                     <Badge className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs">
@@ -103,19 +90,21 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
                                                 <div className="flex flex-col items-end gap-2">
                                                     <div className="flex items-center gap-2">
                                                         <Button
+                                                            className="aspect-square h-auto"
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
                                                         >
-                                                            <PackageMinus className="h-3 w-3" />
+                                                            <Minus className="h-3 w-3" />
                                                         </Button>
                                                         <span className="w-8 text-center text-sm">{item.quantity}</span>
                                                         <Button
+                                                            className="aspect-square h-auto"
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
                                                         >
-                                                            <PackagePlus className="h-3 w-3" />
+                                                            <Plus className="h-3 w-3" />
                                                         </Button>
                                                     </div>
                                                     <p className="text-sm font-semibold">
