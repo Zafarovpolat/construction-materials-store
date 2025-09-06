@@ -1,14 +1,19 @@
-import { FlatCompat } from '@eslint/eslintrc';
+import { FlatCompat } from '@eslint/compat';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
+  baseDirectory: __dirname,
 });
 
 const eslintConfig = [
   {
-    ignores: ['src/visual-edits/component-tagger-loader.js'], // Добавляем ignorePatterns здесь
+    ignores: ['src/visual-edits/component-tagger-loader.js'],
   },
   ...compat.config({
     extends: ['next', 'plugin:@typescript-eslint/recommended'],

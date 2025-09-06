@@ -1,12 +1,8 @@
+import { parse } from '@babel/parser';
+import MagicString from 'magic-string';
+import { walk } from 'estree-walker';
+import path from 'path';
 
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = componentTagger;
-const parser_1 = require("@babel/parser");
-const magic_string_1 = require("magic-string");
-const estree_walker_1 = require("estree-walker");
-const path = require("path");
-/* ───────────────────────────────────────────── Blacklists */
 const threeFiberElems = [
     "object3D",
     "audioListener",
@@ -269,17 +265,16 @@ const dreiElems = [
     "Stars",
     "OrbitControls"
 ];
+
 const shouldTag = (name) => !threeFiberElems.includes(name) && !dreiElems.includes(name);
-// ➕ Collect aliases of the Next.js <Image> component so we can reliably tag it even if it was renamed.
+
 const isNextImageAlias = (aliases, name) => aliases.has(name);
+
 const extractLiteralValue = (node) => {
-    if (!node)
-        return undefined;
+    if (!node) return undefined;
     switch (node.type) {
         case 'StringLiteral':
-            return node.value;
         case 'NumericLiteral':
-            return node.value;
         case 'BooleanLiteral':
             return node.value;
         case 'ObjectExpression':
@@ -297,12 +292,11 @@ const extractLiteralValue = (node) => {
             return undefined;
     }
 };
+
 const findVariableDeclarations = (ast) => {
     const variables = new Map();
-    (0, estree_walker_1.walk)(ast, {
+    walk(ast, {
         enter(node) {
-            var _a;
-            // Handle const/let/var declarations
             if (node.type === 'VariableDeclaration') {
                 for (const declarator of node.declarations) {
                     if (declarator.id.type === 'Identifier' && declarator.init) {
@@ -313,39 +307,39 @@ const findVariableDeclarations = (ast) => {
                             type: Array.isArray(value) ? 'array' : typeof value === 'object' ? 'object' : 'primitive',
                             value,
                             arrayItems: Array.isArray(value) ? value : undefined,
-                            loc: (_a = declarator.loc) === null || _a === void 0 ? void 0 : _a.start
+                            loc: declarator.loc?.start,
                         });
                     }
                 }
             }
-        }
+        },
     });
     return variables;
 };
+
 const findMapContext = (node, variables) => {
-    var _a, _b, _c, _d, _e, _f, _g;
-    // Walk up the tree to find if this JSX element is inside a map call
     let current = node;
     let depth = 0;
-    const maxDepth = 10; // Prevent infinite loops
+    const maxDepth = 10;
     while (current && depth < maxDepth) {
-        if (current.type === 'CallExpression' &&
-            ((_a = current.callee) === null || _a === void 0 ? void 0 : _a.type) === 'MemberExpression' &&
-            ((_c = (_b = current.callee) === null || _b === void 0 ? void 0 : _b.property) === null || _c === void 0 ? void 0 : _c.name) === 'map') {
-            // Found a .map() call, check if it's on a known array
-            const arrayName = (_d = current.callee.object) === null || _d === void 0 ? void 0 : _d.name;
-            const mapCallback = (_e = current.arguments) === null || _e === void 0 ? void 0 : _e[0];
-            if (arrayName && (mapCallback === null || mapCallback === void 0 ? void 0 : mapCallback.type) === 'ArrowFunctionExpression') {
-                const itemParam = (_f = mapCallback.params) === null || _f === void 0 ? void 0 : _f[0];
-                const indexParam = (_g = mapCallback.params) === null || _g === void 0 ? void 0 : _g[1];
-                if ((itemParam === null || itemParam === void 0 ? void 0 : itemParam.type) === 'Identifier') {
+        if (
+            current.type === 'CallExpression' &&
+            current.callee?.type === 'MemberExpression' &&
+            current.callee?.property?.name === 'map'
+        ) {
+            const arrayName = current.callee.object?.name;
+            const mapCallback = current.arguments?.[0];
+            if (arrayName && mapCallback?.type === 'ArrowFunctionExpression') {
+                const itemParam = mapCallback.params?.[0];
+                const indexParam = mapCallback.params?.[1];
+                if (itemParam?.type === 'Identifier') {
                     const varInfo = variables.get(arrayName);
                     return {
                         arrayName,
                         itemVarName: itemParam.name,
-                        arrayItems: varInfo === null || varInfo === void 0 ? void 0 : varInfo.arrayItems,
-                        arrayLoc: varInfo === null || varInfo === void 0 ? void 0 : varInfo.loc,
-                        indexVarName: (indexParam === null || indexParam === void 0 ? void 0 : indexParam.type) === 'Identifier' ? indexParam.name : undefined
+                        arrayItems: varInfo?.arrayItems,
+                        arrayLoc: varInfo?.loc,
+                        indexVarName: indexParam?.type === 'Identifier' ? indexParam.name : undefined,
                     };
                 }
             }
@@ -355,83 +349,74 @@ const findMapContext = (node, variables) => {
     }
     return null;
 };
+
 const getSemanticName = (node, mapContext, imageAliases) => {
     const getName = () => {
-        if (node.name.type === 'JSXIdentifier')
-            return node.name.name;
-        if (node.name.type === 'JSXMemberExpression')
-            return `${node.name.object.name}.${node.name.property.name}`;
+        if (node.name.type === 'JSXIdentifier') return node.name.name;
+        if (node.name.type === 'JSXMemberExpression') return `${node.name.object.name}.${node.name.property.name}`;
         return null;
     };
     const tagName = getName();
-    if (!tagName)
-        return null;
-    // For Next.js Image components, always return 'img' so the name is a valid HTML tag.
-    if (isNextImageAlias(imageAliases, tagName)) {
-        return 'img';
-    }
+    if (!tagName) return null;
     return isNextImageAlias(imageAliases, tagName) ? 'img' : tagName;
 };
-/* ───────────────────────────────────────────── Loader */
-function componentTagger(src, map) {
+
+export default function componentTagger(src, map) {
     const done = this.async();
     try {
-        if (/node_modules/.test(this.resourcePath))
-            return done(null, src, map);
-        const ast = (0, parser_1.parse)(src, {
+        if (/node_modules/.test(this.resourcePath)) return done(null, src, map);
+        const ast = parse(src, {
             sourceType: 'module',
             plugins: ['jsx', 'typescript'],
         });
-        const ms = new magic_string_1.default(src);
+        const ms = new MagicString(src);
         const rel = path.relative(process.cwd(), this.resourcePath);
         let mutated = false;
-        // Add parent references to AST nodes for upward traversal (non-enumerable to avoid infinite recursion)
-        (0, estree_walker_1.walk)(ast, {
+
+        walk(ast, {
             enter(node, parent) {
                 if (parent && !Object.prototype.hasOwnProperty.call(node, 'parent')) {
                     Object.defineProperty(node, 'parent', { value: parent, enumerable: false });
                 }
-            }
+            },
         });
-        // 0️⃣ Collect variable declarations first
+
         const variables = findVariableDeclarations(ast);
-        // 1️⃣ Gather local identifiers that reference `next/image`.
         const imageAliases = new Set();
-        (0, estree_walker_1.walk)(ast, {
+        walk(ast, {
             enter(node) {
-                if (node.type === 'ImportDeclaration' &&
-                    node.source.value === 'next/image') {
+                if (node.type === 'ImportDeclaration' && node.source.value === 'next/image') {
                     for (const spec of node.specifiers) {
                         imageAliases.add(spec.local.name);
                     }
                 }
             },
         });
-        // 2️⃣ Inject attributes with enhanced semantic context.
-        (0, estree_walker_1.walk)(ast, {
+
+        walk(ast, {
             enter(node) {
-                var _a;
-                if (node.type !== 'JSXOpeningElement')
-                    return;
+                if (node.type !== 'JSXOpeningElement') return;
                 const mapContext = findMapContext(node, variables);
                 const semanticName = getSemanticName(node, mapContext, imageAliases);
-                if (!semanticName ||
+                if (
+                    !semanticName ||
                     ['Fragment', 'React.Fragment'].includes(semanticName) ||
-                    (!isNextImageAlias(imageAliases, semanticName.split('-')[0]) &&
-                        !shouldTag(semanticName)))
+                    (!isNextImageAlias(imageAliases, semanticName.split('-')[0]) && !shouldTag(semanticName))
+                )
                     return;
+
                 const { line, column } = node.loc.start;
                 let orchidsId = `${rel}:${line}:${column}`;
-                // Enhance the ID with context if we have map information
                 if (mapContext) {
                     orchidsId += `@${mapContext.arrayName}`;
                 }
-                // 🔍 Append referenced variable locations for simple identifier references in props
-                (_a = node.attributes) === null || _a === void 0 ? void 0 : _a.forEach((attr) => {
-                    var _a, _b;
-                    if (attr.type === 'JSXAttribute' &&
-                        ((_a = attr.value) === null || _a === void 0 ? void 0 : _a.type) === 'JSXExpressionContainer' &&
-                        ((_b = attr.value.expression) === null || _b === void 0 ? void 0 : _b.type) === 'Identifier') {
+
+                node.attributes?.forEach((attr) => {
+                    if (
+                        attr.type === 'JSXAttribute' &&
+                        attr.value?.type === 'JSXExpressionContainer' &&
+                        attr.value.expression?.type === 'Identifier'
+                    ) {
                         const refName = attr.value.expression.name;
                         const varInfo = variables.get(refName);
                         if (varInfo) {
@@ -439,22 +424,20 @@ function componentTagger(src, map) {
                         }
                     }
                 });
-                // 📍 If inside a map context and we have an index variable, inject data-map-index
-                if (mapContext === null || mapContext === void 0 ? void 0 : mapContext.indexVarName) {
+
+                if (mapContext?.indexVarName) {
                     ms.appendLeft(node.name.end, ` data-map-index={${mapContext.indexVarName}}`);
                 }
                 ms.appendLeft(node.name.end, ` data-orchids-id="${orchidsId}" data-orchids-name="${semanticName}"`);
                 mutated = true;
             },
         });
-        if (!mutated)
-            return done(null, src, map);
+
+        if (!mutated) return done(null, src, map);
         const out = ms.toString();
         const outMap = ms.generateMap({ hires: true });
-        /* Turbopack expects the sourcemap as a JSON *string*. */
         done(null, out, JSON.stringify(outMap));
-    }
-    catch (err) {
+    } catch (err) {
         done(err);
     }
 }
