@@ -9,9 +9,7 @@ type ReporterProps = {
 };
 
 export default function ErrorReporter({ error, reset }: ReporterProps) {
-  /* ─ instrumentation shared by every route ─ */
   const lastOverlayMsg = useRef("");
-  // Исправление: передаем null как начальное значение
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
