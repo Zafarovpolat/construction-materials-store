@@ -7,18 +7,21 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: ['src/visual-edits/component-tagger-loader.js'], // Добавляем ignorePatterns здесь
+  },
   ...compat.config({
-    extends: ['next', 'plugin:@typescript-eslint/recommended'], // Добавляем рекомендованные правила TypeScript
-    plugins: ['import', '@typescript-eslint'], // Добавляем плагин TypeScript
-    parser: '@typescript-eslint/parser', // Указываем парсер для TypeScript
+    extends: ['next', 'plugin:@typescript-eslint/recommended'],
+    plugins: ['import', '@typescript-eslint'],
+    parser: '@typescript-eslint/parser',
     parserOptions: {
       sourceType: 'module',
       ecmaVersion: 'latest',
-      project: './tsconfig.json', // Указываем путь к tsconfig.json, если он есть
+      project: './tsconfig.json',
     },
   }),
   {
-    files: ['**/*.ts', '**/*.tsx'], // Применяем правила только для TypeScript файлов
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       sourceType: 'module',
@@ -30,7 +33,7 @@ const eslintConfig = [
       'react/no-unescaped-entities': 'off',
       '@next/next/no-img-element': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'off', // Правило уже отключено
+      '@typescript-eslint/no-explicit-any': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'import/no-unresolved': 'error',
       'import/named': 'error',

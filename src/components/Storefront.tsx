@@ -172,7 +172,7 @@ export default function Storefront() {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    let filtered = MOCK_PRODUCTS.filter(product => {
+    const filtered = MOCK_PRODUCTS.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.material.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
