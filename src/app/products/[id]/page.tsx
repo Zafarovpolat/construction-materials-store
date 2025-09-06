@@ -164,9 +164,9 @@ export default function ProductPage() {
 
                 {/* Product Details */}
                 <div className="container py-8 pt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="flex flex-col md:flex-row gap-8 max-w-[1024px] m-auto">
                         {/* Product Image */}
-                        <div className="aspect-square overflow-hidden rounded-lg">
+                        <div className="aspect-video max-w-[100%] md:aspect-square overflow-hidden rounded-lg md:max-w-[400px]">
                             <img
                                 src={product.image}
                                 alt={product.name}

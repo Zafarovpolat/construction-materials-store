@@ -368,8 +368,11 @@ export default function componentTagger(src, map) {
         const ast = parse(src, {
             sourceType: 'module',
             plugins: ['jsx', 'typescript'],
+            sourceFilename: this.resourcePath, // Добавляем имя исходного файла для парсера
         });
-        const ms = new MagicString(src);
+        const ms = new MagicString(src, {
+            filename: this.resourcePath, // Указываем имя файла для MagicString
+        });
         const rel = path.relative(process.cwd(), this.resourcePath);
         let mutated = false;
 
@@ -435,8 +438,13 @@ export default function componentTagger(src, map) {
 
         if (!mutated) return done(null, src, map);
         const out = ms.toString();
-        const outMap = ms.generateMap({ hires: true });
-        done(null, out, JSON.stringify(outMap));
+        const outMap = ms.generateMap({
+            source: rel, // Указываем относительный путь к исходному файлу
+            file: `${path.basename(this.resourcePath)}.map`, // Имя файла source map
+            hires: true, // Высокая точность маппинга
+            includeContent: true, // Включаем содержимое исходного файла
+        });
+        done(null, out, outMap);
     } catch (err) {
         done(err);
     }

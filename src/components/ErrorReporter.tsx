@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 
 type ReporterProps = {
-  /*  ¯¯ props are only provided on the global-error page ¯¯ */
   error?: Error & { digest?: string };
   reset?: () => void;
 };
