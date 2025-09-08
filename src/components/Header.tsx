@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, Store, ShoppingBag } from "lucide-react";
+import { Search, ShoppingCart, Store, ShoppingBag, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,14 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full aspect-square h-auto p-0"
+                        onClick={() => router.push("/login")}
+                    >
+                        <User className="h-4 w-4" />
+                    </Button>
                     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="sm" className="relative aspect-square h-auto">
