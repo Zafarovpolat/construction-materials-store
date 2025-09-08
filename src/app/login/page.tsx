@@ -40,7 +40,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background px-4 md:px-0">
             <div className="flex items-center justify-center min-h-screen">
                 <div className="w-full max-w-md">
                     <Button
